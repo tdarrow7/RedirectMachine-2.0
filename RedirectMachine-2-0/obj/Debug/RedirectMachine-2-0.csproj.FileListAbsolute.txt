@@ -1,0 +1,7 @@
+C:\Users\timothy.darrow\source\repos\RedirectMachine-2-0\RedirectMachine-2-0\obj\Debug\RedirectMachine-2-0.csprojAssemblyReference.cache
+C:\Users\timothy.darrow\source\repos\RedirectMachine-2-0\RedirectMachine-2-0\obj\Debug\RedirectMachine-2-0.csproj.CoreCompileInputs.cache
+C:\Users\timothy.darrow\source\repos\RedirectMachine-2-0\RedirectMachine-2-0\bin\Debug\RedirectMachine-2-0.exe.config
+C:\Users\timothy.darrow\source\repos\RedirectMachine-2-0\RedirectMachine-2-0\bin\Debug\RedirectMachine-2-0.exe
+C:\Users\timothy.darrow\source\repos\RedirectMachine-2-0\RedirectMachine-2-0\bin\Debug\RedirectMachine-2-0.pdb
+C:\Users\timothy.darrow\source\repos\RedirectMachine-2-0\RedirectMachine-2-0\obj\Debug\RedirectMachine-2-0.exe
+C:\Users\timothy.darrow\source\repos\RedirectMachine-2-0\RedirectMachine-2-0\obj\Debug\RedirectMachine-2-0.pdb
