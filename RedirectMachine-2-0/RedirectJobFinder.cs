@@ -7,6 +7,7 @@ namespace RedirectMachine_2_0
     internal class RedirectJobFinder
     {
         private string root;
+        private List<Job> jobList = new List<Job>();
 
         public RedirectJobFinder(string root)
         {
@@ -15,18 +16,16 @@ namespace RedirectMachine_2_0
 
         internal void Run()
         {
-            List<Job> jobList = setUpJobs();
+            jobList = setUpJobs();
             Console.WriteLine($"number of jobs: {jobList.Count}");
             startJobs(jobList);
         }
 
-        private void startJobs(List<Job> jobList)
+        public int returnJobCount()
         {
-            foreach (var job in jobList)
-            {
-                job.Start();
-            }
+            return jobList.Count;
         }
+
 
         private List<Job> setUpJobs()
         {
@@ -46,6 +45,14 @@ namespace RedirectMachine_2_0
         {
             string[] subDirectories = Directory.GetDirectories(directory);
             return (subDirectories.Length < 1) ? true : false;
+        }
+
+        private void startJobs(List<Job> jobList)
+        {
+            foreach (var job in jobList)
+            {
+                job.Start();
+            }
         }
     }
 }
