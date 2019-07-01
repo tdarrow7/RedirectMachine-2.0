@@ -131,13 +131,13 @@ namespace RedirectMachine_2_0
         /// </summary>
         /// <param name="urlHeaderMaps"></param>
         /// <returns></returns>
-        internal string ReturnRemappedUrlParentDir(string url, List<Tuple<string, string>> urlHeaderMaps)
+        internal string ReturnRemappedUrlParentDir(string url, string[,] urlHeaderMaps)
         {
-            foreach (var i in urlHeaderMaps)
+            for (int i = 0; i < urlHeaderMaps.GetLength(0); i++)
             {
-                if (url.Contains(i.Item1))
+                if (url.Contains(urlHeaderMaps[i, 0]))
                 {
-                    return i.Item2;
+                    return urlHeaderMaps[i, 1];
                 }
             }
             return "/";

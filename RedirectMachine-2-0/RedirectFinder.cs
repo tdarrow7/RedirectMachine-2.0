@@ -9,8 +9,9 @@ namespace RedirectMachine_2_0
     internal class RedirectFinder
     {
         // declare all universally needed variables 
-        //public List<CatchAllUtils> catchalls = new List<CatchAllUtils>();
+        public List<CatchAllUtils> catchalls = new List<CatchAllUtils>();
         public static List<Tuple<string, string>> newUrlSiteMap = new List<Tuple<string, string>>();
+        //public static List<RedirectUrl> redirectUrls = new List<RedirectUrl>();
         public static List<UrlDto> urlDtos = new List<UrlDto>();
         public static CatchAllUtils catchAllUtilObject = new CatchAllUtils();
         UrlUtils utils = new UrlUtils();
@@ -19,21 +20,29 @@ namespace RedirectMachine_2_0
         List<string> foundList = new List<string>();
         HashSet<string> existingRedirects = new HashSet<string>();
 
-        public string InputOldUrlFile { get; set; }
-        public string InputNewUrlFile { get; set; }
-        public string InputExisting301File { get; set; }
-        public string OutputLostUrlFile { get; set; }
-        public string OutputFoundUrlFile { get; set; }
-        public string OutputCatchAllFile { get; set; }
-        public List<Tuple<string, string>> urlHeaderMaps = new List<Tuple<string, string>>();
-
         public int FoundCount = 0;
         public int LostCount = 0;
 
-        internal object GetCatchallCount()
-        {
-            return catchAllUtilObject.CatchAllCount;
-        }
+        public static string[,] urlHeaderMaps = {
+            { "https://www.google.com", "/googleness/" }
+        };
+
+        public string osUrlFile = @"c:\users\timothy.darrow\source\repos\redirectmachine\OldSiteUrls.csv";
+        public string nsUrlFile = @"C:\Users\timothy.darrow\source\repos\RedirectMachine\NewSiteUrls.csv";
+        public string existingRedirectsFile = @"C:\Users\timothy.darrow\source\repos\RedirectMachine\ExistingRedirects.csv";
+        public string lostUrlFile = @"C:\Users\timothy.darrow\Downloads\LostUrls.csv";
+        public string foundUrlFile = @"C:\Users\timothy.darrow\Downloads\FoundUrls.csv";
+        public string catchAllFile = @"C:\Users\timothy.darrow\Downloads\Probabilities.csv";
+
+        //string osUrlFile = @"C:\Users\timot\source\repos\RedirectMachine\OldSiteUrls.csv";
+        ////string osUrlFile = @"C:\Users\timot\source\repos\RedirectMachine\TestBatch.csv";
+        //string nsUrlFile = @"C:\Users\timot\source\repos\RedirectMachine\NewSiteUrls.csv";
+        ////string nsUrlFile = @"C:\Users\timot\source\repos\RedirectMachine\TestNewSiteUrls.csv";
+        //string existingRedirectsFile = @"C:\Users\timot\source\repos\RedirectMachine\ExistingRedirects.csv";
+        //string lostUrlFile = @"C:\Users\timot\Downloads\LostUrls.csv";
+        //string foundUrlFile = @"C:\Users\timot\Downloads\FoundUrls.csv";
+        //string catchAllFile = @"C:\Users\timot\Downloads\Probabilities.csv";
+
 
         /// <summary>
         /// default working constructor
@@ -53,22 +62,23 @@ namespace RedirectMachine_2_0
         /// </summary>
         internal void Run()
         {
-            //Stopwatch stopwatch = new Stopwatch();
-            //stopwatch.Start();
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
             Console.WriteLine("begin search: ");
+            ImportNewUrlsIntoList(nsUrlFile);
+            ImportOldUrlsIntoList(osUrlFile);
+            ImportExistingRedirects(existingRedirectsFile);
             //catchAllUtilObject.GenerateCatchAllParams(existingRedirectsFile);
-            ImportExisting301s(InputExisting301File);
-            ImportNewUrlsIntoList(InputNewUrlFile);
-            ImportOldUrlsIntoList(InputOldUrlFile);
             FindUrlMatches(urlDtos);
+            //StartThreads();
+            catchAllUtilObject.ExportCatchAllsToCSV(catchAllFile);
             ExportNewCSVs();
-            catchAllUtilObject.ExportCatchAllsToCSV(OutputCatchAllFile);
             Console.WriteLine("end of exports");
-            //stopwatch.Stop();
-            //TimeSpan ts = stopwatch.Elapsed;
-            //string elapsedTime = string.Format("{0:00}:{1:00}:{2:00}{3:00}",
-            //    ts.Hours, ts.Minutes, ts.Seconds, ts.Milliseconds / 10);
-            //Console.WriteLine($"Run time: {elapsedTime}");
+            stopwatch.Stop();
+            TimeSpan ts = stopwatch.Elapsed;
+            string elapsedTime = string.Format("{0:00}:{1:00}:{2:00}{3:00}",
+                ts.Hours, ts.Minutes, ts.Seconds, ts.Milliseconds / 10);
+            Console.WriteLine($"Run time: {elapsedTime}");
         }
 
 
@@ -126,23 +136,14 @@ namespace RedirectMachine_2_0
             return urlDto;
         }
 
-        /// <summary>
-        /// using the Existing301Redirects file, determine what lines are catchalls and what are redirected site maps
-        /// if the line ends with a true bool or is null, add the line as a catchall redirect
-        /// if the line ends with false, add the line as a headerMap tuple
-        /// </summary>
-        /// <param name="urlFile"></param>
-        private void ImportExisting301s(string urlFile)
+        private void ImportExistingRedirects(string urlFile)
         {
             using (var reader = new StreamReader(@"" + urlFile))
             {
                 while (!reader.EndOfStream)
                 {
-                    string[] redirectLine = reader.ReadLine().ToLower().Split(',');
-                    if (redirectLine[2] == "true" || redirectLine[2] == null)
-                        catchAllUtilObject.AddNewCatchAllParam(new Tuple<string, string>(redirectLine[0], redirectLine[1]));
-                    else
-                        urlHeaderMaps.Add(new Tuple<string, string>(redirectLine[0], redirectLine[1]));
+                    string url = reader.ReadLine().ToLower();
+                    existingRedirects.Add(url);
                 }
             }
             Console.WriteLine("Done Importing");
@@ -176,6 +177,37 @@ namespace RedirectMachine_2_0
             }
             Console.WriteLine("Done Finding Url Matches");
         }
+
+        //public void StartThreads()
+        //{
+        //    int count = 1000,
+        //        i = redirectUrls.Count / count,
+        //        j = 0,
+        //        modulus = redirectUrls.Count % count,
+        //        length;
+        //    List<RedirectUrl> chunkOfRedirects;
+        //    Thread[] threads = new Thread[i];
+        //    for (int k = 0; k < threads.Length; k++)
+        //    {
+        //        length = (k == threads.Length - 1) ? count + modulus : count;
+        //        chunkOfRedirects = GetChunkOfRedirects(j, length);
+        //        Console.WriteLine($"j: {j}");
+        //        Console.WriteLine($"length: {length}");
+        //        threads[k] = new Thread(() => this.FindUrlMatches(chunkOfRedirects));
+        //        j += length;
+        //    }
+        //    for (int k = 0; k < threads.Length; k++)
+        //    {
+        //        threads[k].Start();
+        //    }
+
+        // }
+
+        //internal List<RedirectUrl> GetChunkOfRedirects(int index, int length)
+        //{
+        //    List<RedirectUrl> result = redirectUrls.GetRange(index, length);
+        //    return result;
+        //}
 
         /// <summary>
         /// Scan all objects in redirectUrls list and put them in either the foundList or lostList, depending on their score
@@ -215,8 +247,8 @@ namespace RedirectMachine_2_0
                         lostList.Add($"{urlDto.OriginalUrl}");
                 }
             }
-            ExportToCSV(foundList, OutputFoundUrlFile);
-            ExportToCSV(lostList, OutputLostUrlFile);
+            ExportToCSV(foundList, foundUrlFile);
+            ExportToCSV(lostList, lostUrlFile);
             Console.WriteLine($"number of found urls: {FoundCount}");
             Console.WriteLine($"number of lost urls: {LostCount}");
         }

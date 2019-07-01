@@ -21,13 +21,21 @@ namespace RedirectMachine_2_0
             catchAllParams = new List<Tuple<string, string>>();
         }
 
+
         /// <summary>
-        /// add new tuple to catchall params list
+        /// Create working list of all pararameters that need to be checked.
         /// </summary>
-        /// <param name="tuple"></param>
-        internal void AddNewCatchAllParam(Tuple<string, string> tuple)
+        /// <param name="urlFile"></param>
+        public void GenerateCatchAllParams(string urlFile)
         {
-            catchAllParams.Add(tuple);
+            using (var reader = new StreamReader(@"" + urlFile))
+            {
+                while (!reader.EndOfStream)
+                {
+                    string[] tempArray = reader.ReadLine().ToLower().Split(',');
+                    catchAllParams.Add(new Tuple<string, string>(tempArray[0], tempArray[1]));
+                }
+            }
         }
 
         /// <summary>
