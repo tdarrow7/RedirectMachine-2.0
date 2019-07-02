@@ -48,13 +48,12 @@
   <ItemGroup>
     <Compile Include="CatchAllUrl.cs" />
     <Compile Include="CatchAllUtils.cs" />
-    <Compile Include="Job.cs" />
+    <Compile Include="RedirectJob.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RedirectFinder.cs" />
     <Compile Include="RedirectJobFinder.cs" />
     <Compile Include="RedirectJobIOProcessor.cs" />
-    <Compile Include="RedirectUrl.cs" />
     <Compile Include="UrlDto.cs" />
     <Compile Include="UrlUtils.cs" />
   </ItemGroup>

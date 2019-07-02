@@ -35,9 +35,7 @@ namespace RedirectMachine_2_0
             foreach (string subDirectory in subdirectoryEntries)
             {
                 if (checkCreationDate(subDirectory) && checkIfJobIsNeeded(subDirectory))
-                {
                     jobList.Add(new RedirectJob(subDirectory));
-                }
             }
             return jobList;
         }
