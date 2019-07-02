@@ -98,5 +98,14 @@ namespace RedirectMachine_2_0
             }
             Console.WriteLine($"Number of urls turned to catchalls: {CatchAllCount}");
         }
+
+        /// <summary>
+        /// add tuple 
+        /// </summary>
+        /// <param name="tuple"></param>
+        internal void AddNewCatchAllParam(Tuple<string, string> tuple)
+        {
+            catchAllParams.Add(tuple);
+        }
     }
 }

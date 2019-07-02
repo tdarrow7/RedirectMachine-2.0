@@ -9,40 +9,9 @@ namespace RedirectMachine_2_0
     internal class RedirectFinder
     {
         // declare all universally needed variables 
-        public List<CatchAllUtils> catchalls = new List<CatchAllUtils>();
-        public static List<Tuple<string, string>> newUrlSiteMap = new List<Tuple<string, string>>();
-        //public static List<RedirectUrl> redirectUrls = new List<RedirectUrl>();
-        public static List<UrlDto> urlDtos = new List<UrlDto>();
         public static Existing301Utils catchAllUtilObject = new Existing301Utils();
         UrlUtils utils = new UrlUtils();
         RedirectUrl redirectUrlUtils = new RedirectUrl();
-        List<string> lostList = new List<string>();
-        List<string> foundList = new List<string>();
-        HashSet<string> existingRedirects = new HashSet<string>();
-
-        public int FoundCount = 0;
-        public int LostCount = 0;
-
-        public static string[,] urlHeaderMaps = {
-            { "https://www.google.com", "/googleness/" }
-        };
-
-        public string osUrlFile = @"c:\users\timothy.darrow\source\repos\redirectmachine\OldSiteUrls.csv";
-        public string nsUrlFile = @"C:\Users\timothy.darrow\source\repos\RedirectMachine\NewSiteUrls.csv";
-        public string existingRedirectsFile = @"C:\Users\timothy.darrow\source\repos\RedirectMachine\ExistingRedirects.csv";
-        public string lostUrlFile = @"C:\Users\timothy.darrow\Downloads\LostUrls.csv";
-        public string foundUrlFile = @"C:\Users\timothy.darrow\Downloads\FoundUrls.csv";
-        public string catchAllFile = @"C:\Users\timothy.darrow\Downloads\Probabilities.csv";
-
-        //string osUrlFile = @"C:\Users\timot\source\repos\RedirectMachine\OldSiteUrls.csv";
-        ////string osUrlFile = @"C:\Users\timot\source\repos\RedirectMachine\TestBatch.csv";
-        //string nsUrlFile = @"C:\Users\timot\source\repos\RedirectMachine\NewSiteUrls.csv";
-        ////string nsUrlFile = @"C:\Users\timot\source\repos\RedirectMachine\TestNewSiteUrls.csv";
-        //string existingRedirectsFile = @"C:\Users\timot\source\repos\RedirectMachine\ExistingRedirects.csv";
-        //string lostUrlFile = @"C:\Users\timot\Downloads\LostUrls.csv";
-        //string foundUrlFile = @"C:\Users\timot\Downloads\FoundUrls.csv";
-        //string catchAllFile = @"C:\Users\timot\Downloads\Probabilities.csv";
-
 
         /// <summary>
         /// default working constructor
@@ -63,13 +32,10 @@ namespace RedirectMachine_2_0
         internal void Run()
         {
             Console.WriteLine("begin search: ");
-            //ImportExisting301s(InputExisting301File);
-            ImportNewUrlsIntoList(InputNewUrlFile);
-            ImportOldUrlsIntoList(InputOldUrlFile);
-            FindUrlMatches(urlDtos);
+            //FindUrlMatches(urlDtos);
             //StartThreads();
-            catchAllUtilObject.ExportCatchAllsToCSV(catchAllFile);
-            ExportNewCSVs();
+            //catchAllUtilObject.ExportCatchAllsToCSV(catchAllFile);
+            //ExportNewCSVs();
             Console.WriteLine("end of exports");
         }
 
@@ -87,7 +53,7 @@ namespace RedirectMachine_2_0
                 while (!reader.EndOfStream)
                 {
                     string[] tempArray = reader.ReadLine().ToLower().Split(',');
-                    newUrlSiteMap.Add(new Tuple<string, string>(tempArray[0], "/" + tempArray[1] + "/"));
+                    //newUrlSiteMap.Add(new Tuple<string, string>(tempArray[0], "/" + tempArray[1] + "/"));
                 }
             }
             Console.WriteLine("Done importing new urls into list");
@@ -104,8 +70,8 @@ namespace RedirectMachine_2_0
                 while (!reader.EndOfStream)
                 {
                     string url = reader.ReadLine().ToLower();
-                    if (!catchAllUtilObject.CheckExistingCatchallParams(url) && !existingRedirects.Contains(url))
-                        urlDtos.Add(createUrlDto(url));
+                    //if (!catchAllUtilObject.CheckExistingCatchallParams(url) && !existingRedirects.Contains(url))
+                    //    urlDtos.Add(createUrlDto(url));
                 }
             }
             Console.WriteLine("Done importing old urls into list");
@@ -124,7 +90,7 @@ namespace RedirectMachine_2_0
             urlDto.UrlResourceDir = utils.TruncateString(url, 48);
             urlDto.UrlResourceDirChunks = utils.ReturnUrlChunks(urlDto.UrlResourceDir);
             urlDto.UrlAllChunks = utils.ReturnUrlChunks(url);
-            urlDto.RemappedParentDir = utils.ReturnRemappedUrlParentDir(url, urlHeaderMaps);
+            //urlDto.RemappedParentDir = utils.ReturnRemappedUrlParentDir(url, urlHeaderMaps);
             return urlDto;
         }
 
@@ -162,20 +128,20 @@ namespace RedirectMachine_2_0
         /// <param name="newList"></param>
         public void FindUrlMatches(List<UrlDto> chunkOfRedirects)
         {
-            Console.WriteLine("within url finder");
-            foreach (var urlDto in chunkOfRedirects)
-            {
-                if (!redirectUrlUtils.findMatching301(urlDto, newUrlSiteMap))
-                {
-                    urlDto.Flag = "no match";
-                    if (!urlDto.OriginalUrl.Contains("."))
-                    {
-                        catchAllUtilObject.checkIfCatchAllIsCreated(urlDto.OriginalUrl);
-                        catchAllUtilObject.CatchAllCount++;
-                    }
+            //Console.WriteLine("within url finder");
+            //foreach (var urlDto in chunkOfRedirects)
+            //{
+            //    if (!redirectUrlUtils.findMatching301(urlDto, newUrlSiteMap))
+            //    {
+            //        urlDto.Flag = "no match";
+            //        if (!urlDto.OriginalUrl.Contains("."))
+            //        {
+            //            catchAllUtilObject.checkIfCatchAllIsCreated(urlDto.OriginalUrl);
+            //            catchAllUtilObject.CatchAllCount++;
+            //        }
 
-                }
-            }
+            //    }
+            //}
             Console.WriteLine("Done Finding Url Matches");
         }
 
@@ -209,50 +175,6 @@ namespace RedirectMachine_2_0
         //    List<RedirectUrl> result = redirectUrls.GetRange(index, length);
         //    return result;
         //}
-
-        /// <summary>
-        /// Scan all objects in redirectUrls list and put them in either the foundList or lostList, depending on their score
-        /// Send both temporary lists to buildCSV method to print both found and lost lists
-        /// </summary>
-        internal void ExportNewCSVs()
-        {
-            List<string> foundList = new List<string>();
-            List<string> lostList = new List<string>();
-
-            foundList.Add("Old Site Url,Redirected Url,Flag");
-            lostList.Add("Old Site Url, Potential Redirected Url");
-            foreach (var urlDto in urlDtos)
-            {
-                if (urlDto.Score == true)
-                {
-                    FoundCount++;
-                    foundList.Add($"{urlDto.OriginalUrl},{urlDto.NewUrl}, {urlDto.Flag}");
-                }
-
-                else
-                {
-                    LostCount++;
-                    if (urlDto.matchedUrls.Count > 0)
-                    {
-
-                        string[] arrayOfMatches = urlDto.matchedUrls.ToArray();
-                        for (int i = 0; i < arrayOfMatches.Length; i++)
-                        {
-                            if (i == 0)
-                                lostList.Add($"{urlDto.OriginalUrl},{arrayOfMatches[i]}");
-                            else
-                                lostList.Add($",{arrayOfMatches[i]}");
-                        }
-                    }
-                    else
-                        lostList.Add($"{urlDto.OriginalUrl}");
-                }
-            }
-            ExportToCSV(foundList, foundUrlFile);
-            ExportToCSV(lostList, lostUrlFile);
-            Console.WriteLine($"number of found urls: {FoundCount}");
-            Console.WriteLine($"number of lost urls: {LostCount}");
-        }
 
         /// <summary>
         /// build CSV from specified list of strings and export to specified filePath

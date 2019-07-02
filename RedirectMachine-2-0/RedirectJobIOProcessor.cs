@@ -131,5 +131,79 @@ namespace RedirectMachine_2_0
             Console.WriteLine("Done importing new urls into list");
             return newUrlSiteMap;
         }
+
+        /// <summary>
+        /// For Every line in CSV, read line and check if line belongs in a catchAll. If not, create new RedirectUrl Object.
+        /// </summary>
+        internal List<string> ImportOldUrlsIntoList()
+        {
+            List<string> urlList = new List<string>();
+            using (var reader = new StreamReader(InputOldUrlFile))
+            {
+                while (!reader.EndOfStream)
+                {
+                    urlList.Add(reader.ReadLine().ToLower());
+                }
+            }
+            return urlList;
+        }
+
+        internal void ExportNewCSVs(List<UrlDto> urlDtos)
+        {
+            List<string> foundList = new List<string>();
+            List<string> lostList = new List<string>();
+            int foundCount = 0;
+            int lostCount = 0;
+
+            foundList.Add("Old Site Url,Redirected Url,Flag");
+            lostList.Add("Old Site Url, Potential Redirected Url");
+            foreach (var urlDto in urlDtos)
+            {
+                if (urlDto.Score == true)
+                {
+                    foundCount++;
+                    foundList.Add($"{urlDto.OriginalUrl},{urlDto.NewUrl}, {urlDto.Flag}");
+                }
+
+                else
+                {
+                    lostCount++;
+                    if (urlDto.matchedUrls.Count > 0)
+                    {
+
+                        string[] arrayOfMatches = urlDto.matchedUrls.ToArray();
+                        for (int i = 0; i < arrayOfMatches.Length; i++)
+                        {
+                            if (i == 0)
+                                lostList.Add($"{urlDto.OriginalUrl},{arrayOfMatches[i]}");
+                            else
+                                lostList.Add($",{arrayOfMatches[i]}");
+                        }
+                    }
+                    else
+                        lostList.Add($"{urlDto.OriginalUrl}");
+                }
+            }
+            ExportToCSV(foundList, OutputFoundUrlFile);
+            ExportToCSV(lostList, OutputLostUrlFile);
+            addToLogDump($"number of found urls: {foundCount}");
+            addToLogDump($"number of lost urls: {lostCount}");
+        }
+
+        /// <summary>
+        /// build CSV from specified list of strings and export to specified filePath
+        /// </summary>
+        /// <param name="list"></param>
+        /// <param name="filePath"></param>
+        internal void ExportToCSV(List<string> list, string filePath)
+        {
+            using (TextWriter tw = new StreamWriter(@"" + filePath))
+            {
+                foreach (var item in list)
+                {
+                    tw.WriteLine(item);
+                }
+            }
+        }
     }
 }

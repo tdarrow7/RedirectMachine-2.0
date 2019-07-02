@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Gizmo;
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -7,7 +8,7 @@ namespace RedirectMachine_2_0
     internal class RedirectJobFinder
     {
         private string root;
-        private List<Job> jobList = new List<Job>();
+        private List<RedirectJob> jobList = new List<RedirectJob>();
 
         public RedirectJobFinder(string root)
         {
@@ -27,15 +28,15 @@ namespace RedirectMachine_2_0
         }
 
 
-        private List<Job> setUpJobs()
+        private List<RedirectJob> setUpJobs()
         {
-            List<Job> jobList = new List<Job>();
+            List<RedirectJob> jobList = new List<RedirectJob>();
             string[] subdirectoryEntries = Directory.GetDirectories(root);
             foreach (string subDirectory in subdirectoryEntries)
             {
                 if (checkCreationDate(subDirectory) && checkIfJobIsNeeded(subDirectory))
                 {
-                    jobList.Add(new Job(subDirectory));
+                    jobList.Add(new RedirectJob(subDirectory));
                 }
             }
             return jobList;
@@ -45,9 +46,9 @@ namespace RedirectMachine_2_0
         {
             DateTimeOffset creation = File.GetCreationTime(subDirectory);
             DateTimeOffset currentTime = DateTime.Now;
-            Console.WriteLine($"creation date: {creation}");
-            Console.WriteLine($"current time: {currentTime}");
-            Console.WriteLine($"how long ago the file was created: {currentTime.Subtract(creation).Days}");
+            //Console.WriteLine($"creation date: {creation}");
+            //Console.WriteLine($"current time: {currentTime}");
+            //Console.WriteLine($"how long ago the file was created: {currentTime.Subtract(creation).Days}");
             return true;
         }
 
@@ -55,24 +56,18 @@ namespace RedirectMachine_2_0
         {
             string[] subDirectories = Directory.GetDirectories(directory);
             return (subDirectories.Length < 1) ? true : false;
-            //if (subDirectories.Length < 1)
-            //{
-            //    Console.WriteLine(subDirectories[0]);
-            //    return true;
-            //}
-            //else
-            //{
-            //    Console.WriteLine("no subdirectories");
-            //    return false;
-            //}
         }
 
-        private void startJobs(List<Job> jobList)
+        private void startJobs(List<RedirectJob> jobList)
         {
+            string emailAddresses = "";
             foreach (var job in jobList)
             {
                 job.Start();
+                emailAddresses += job.EmailAddresses + ";";
             }
+            if (jobList.Count > 0)
+                Gremlin.SendEmail("timothy.darrow@scorpion.co", $"There are {jobList.Count} new jobs.", $"Emails are being sent to {emailAddresses}");
         }
     }
 }
