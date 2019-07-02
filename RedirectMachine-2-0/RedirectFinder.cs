@@ -13,7 +13,7 @@ namespace RedirectMachine_2_0
         public static List<Tuple<string, string>> newUrlSiteMap = new List<Tuple<string, string>>();
         //public static List<RedirectUrl> redirectUrls = new List<RedirectUrl>();
         public static List<UrlDto> urlDtos = new List<UrlDto>();
-        public static CatchAllUtils catchAllUtilObject = new CatchAllUtils();
+        public static Existing301Utils catchAllUtilObject = new Existing301Utils();
         UrlUtils utils = new UrlUtils();
         RedirectUrl redirectUrlUtils = new RedirectUrl();
         List<string> lostList = new List<string>();
@@ -62,23 +62,15 @@ namespace RedirectMachine_2_0
         /// </summary>
         internal void Run()
         {
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
             Console.WriteLine("begin search: ");
-            ImportNewUrlsIntoList(nsUrlFile);
-            ImportOldUrlsIntoList(osUrlFile);
-            ImportExistingRedirects(existingRedirectsFile);
-            //catchAllUtilObject.GenerateCatchAllParams(existingRedirectsFile);
+            //ImportExisting301s(InputExisting301File);
+            ImportNewUrlsIntoList(InputNewUrlFile);
+            ImportOldUrlsIntoList(InputOldUrlFile);
             FindUrlMatches(urlDtos);
             //StartThreads();
             catchAllUtilObject.ExportCatchAllsToCSV(catchAllFile);
             ExportNewCSVs();
             Console.WriteLine("end of exports");
-            stopwatch.Stop();
-            TimeSpan ts = stopwatch.Elapsed;
-            string elapsedTime = string.Format("{0:00}:{1:00}:{2:00}{3:00}",
-                ts.Hours, ts.Minutes, ts.Seconds, ts.Milliseconds / 10);
-            Console.WriteLine($"Run time: {elapsedTime}");
         }
 
 
@@ -136,18 +128,27 @@ namespace RedirectMachine_2_0
             return urlDto;
         }
 
-        private void ImportExistingRedirects(string urlFile)
-        {
-            using (var reader = new StreamReader(@"" + urlFile))
-            {
-                while (!reader.EndOfStream)
-                {
-                    string url = reader.ReadLine().ToLower();
-                    existingRedirects.Add(url);
-                }
-            }
-            Console.WriteLine("Done Importing");
-        }
+        /// <summary>
+        /// using the Existing301Redirects file, determine what lines are catchalls and what are redirected site maps
+        /// if the line ends with a true bool or is null, add the line as a catchall redirect
+        /// if the line ends with false, add the line as a headerMap tuple
+        /// </summary>
+        /// <param name="urlFile"></param>
+        //private void ImportExisting301s(string urlFile)
+        //{
+        //    using (var reader = new StreamReader(@"" + urlFile))
+        //    {
+        //        while (!reader.EndOfStream)
+        //        {
+        //            string[] redirectLine = reader.ReadLine().ToLower().Split(',');
+        //            if (redirectLine[2] == "true" || redirectLine[2] == null)
+        //                catchAllUtilObject.AddNewCatchAllParam(new Tuple<string, string>(redirectLine[0], redirectLine[1]));
+        //            else
+        //                urlHeaderMaps.Add(new Tuple<string, string>(redirectLine[0], redirectLine[1]));
+        //        }
+        //    }
+        //    Console.WriteLine("Done Importing");
+        //}
 
         /// <summary>
         /// check every item in List<RedirectUrl> redirectUrls and compare with items in List<> newUrlSiteMap.

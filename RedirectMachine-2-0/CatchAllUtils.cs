@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace RedirectMachine_2_0
 {
-    internal class CatchAllUtils
+    internal class Existing301Utils
     {
         internal List<Tuple<string, string>> catchAllParams;
 
@@ -15,7 +15,7 @@ namespace RedirectMachine_2_0
         /// <summary>
         /// default working constructor
         /// </summary>
-        public CatchAllUtils()
+        public Existing301Utils()
         {
             catchAllList = new Dictionary<string, CatchAllUrl>();
             catchAllParams = new List<Tuple<string, string>>();

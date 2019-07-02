@@ -23,22 +23,17 @@ namespace RedirectMachine_2_0
         //public List<Tuple<string, string>> newUrlSiteMap = new List<Tuple<string, string>>();
         //public List<UrlDto> urlDtos = new List<UrlDto>();
         public string EmailAddresses { get; set; }
+        internal RedirectJobIOProcessor jobIOProcessor;
+        internal RedirectFinder redirectFinder;
+        internal UrlUtils utils;
+        internal Existing301Utils existing301Utils;
+        internal List<Tuple<string, string>> newUrlSiteMap;
+        internal List<Tuple<string, string>> urlHeaderMaps = new List<Tuple<string, string>>();
 
         public Job(string directory)
         {
-            Directory = directory;
-            OldSiteUrlFilePath = System.IO.Directory.GetFiles(Directory, "*OldSiteUrls.csv")[0];
-            NewSiteUrlFilePath = System.IO.Directory.GetFiles(Directory, "*NewSiteUrls.csv")[0];
-            ExistingRedirectFilePath = System.IO.Directory.GetFiles(Directory, "*ExistingRedirects.csv")[0];
-            LoggerFile = System.IO.Directory.GetFiles(Directory, "Log.txt")[0];
-            OutputFolder = Path.Combine(Directory, @"Output");
-            OutputFoundRedirects = Path.Combine(OutputFolder, @"FoundRedirects.csv");
-            OutputLostRedirects = Path.Combine(OutputFolder, @"LostRedirects.csv");
-            OutputCatchalls = Path.Combine(OutputFolder, @"PossibleCatchalls.csv");
-
-            Console.WriteLine(LoggerFile);
-
-            checkforEmailAddressesInLog();
+            jobIOProcessor = new RedirectJobIOProcessor(directory);
+            redirectFinder = new RedirectFinder();
         }
 
         private void checkforEmailAddressesInLog()
@@ -61,29 +56,47 @@ namespace RedirectMachine_2_0
 
         public void Start()
         {
-            //buildLoggerFile();
-            //LogEntries.Add($"Beginning of log for {Path.GetDirectoryName(Directory)}");
-            //catchAllUtilObject.GenerateCatchAllParams(ExistingRedirectFilePath);
-            //ImportNewUrlsIntoList(NewSiteUrlFilePath);
-            //DirectoryInfo dr = System.IO.DirectoryInfo.CreateDirectory(OutputFolder);
-            System.IO.Directory.CreateDirectory(@"" + OutputFolder);
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            EmailAddresses = jobIOProcessor.getEmailAddresses();
+            jobIOProcessor.addToLogDump($"job started at {DateTime.Now.ToString("MM/dd/yyyy HH:mm")}");
+            jobIOProcessor.CreateOutputDirectory();
             Console.WriteLine("starting");
-            Gremlin.EmailTo = EmailAddresses;
+            importExisting301s();
+            importUrlHeaderMaps();
+
             startRedirectFinder();
 
-            //Gremlin.Info($"Your redirect job is done. Go get it from {Directory}", sendEmail: true);
-            Gremlin.SendEmail(EmailAddresses, $"Your redirect job is done. Go get it from {Directory}");
+            jobIOProcessor.writeToLogDump();
+            Console.WriteLine($"Sending email to {EmailAddresses}");
+            Gremlin.SendEmail(EmailAddresses, $"Your redirect job for {Path.GetFileName(jobIOProcessor.Directory)} is done.", $"Your redirect job for {jobIOProcessor.Directory} is done. Please retrieve it within 24 hours");
+        }
+
+        private void importExisting301s()
+        {
+            foreach (var tuple in jobIOProcessor.temp301s)
+            {
+                existing301Utils.AddNewCatchAllParam(tuple);
+            }
+        }
+
+        private void importUrlHeaderMaps()
+        {
+            foreach (var tuple in jobIOProcessor.temp301s)
+            {
+                urlHeaderMaps.Add(tuple);
+            }
         }
 
         private void startRedirectFinder()
         {
-            RedirectFinder redirectFinder = new RedirectFinder();
-            redirectFinder.osUrlFile = OldSiteUrlFilePath;
-            redirectFinder.nsUrlFile = NewSiteUrlFilePath;
-            redirectFinder.existingRedirectsFile = ExistingRedirectFilePath;
-            redirectFinder.catchAllFile = OutputCatchalls;
-            redirectFinder.foundUrlFile = OutputFoundRedirects;
-            redirectFinder.lostUrlFile = OutputLostRedirects;
+            //redirectFinder = new RedirectFinder();
+            redirectFinder.InputOldUrlFile = jobIOProcessor.InputOldUrlFile;
+            redirectFinder.InputNewUrlFile = jobIOProcessor.InputNewUrlFile;
+            redirectFinder.InputExisting301File = jobIOProcessor.InputExisting301File;
+            redirectFinder.OutputCatchAllFile = jobIOProcessor.OutputCatchAllFile;
+            redirectFinder.OutputFoundUrlFile = jobIOProcessor.OutputFoundUrlFile;
+            redirectFinder.OutputLostUrlFile = jobIOProcessor.OutputLostUrlFile;
             redirectFinder.Run();
         }
 

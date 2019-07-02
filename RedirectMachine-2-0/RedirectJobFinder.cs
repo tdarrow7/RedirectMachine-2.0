@@ -33,7 +33,7 @@ namespace RedirectMachine_2_0
             string[] subdirectoryEntries = Directory.GetDirectories(root);
             foreach (string subDirectory in subdirectoryEntries)
             {
-                if (checkIfJobIsNeeded(subDirectory))
+                if (checkCreationDate(subDirectory) && checkIfJobIsNeeded(subDirectory))
                 {
                     jobList.Add(new Job(subDirectory));
                 }
@@ -41,10 +41,30 @@ namespace RedirectMachine_2_0
             return jobList;
         }
 
+        private bool checkCreationDate(string subDirectory)
+        {
+            DateTimeOffset creation = File.GetCreationTime(subDirectory);
+            DateTimeOffset currentTime = DateTime.Now;
+            Console.WriteLine($"creation date: {creation}");
+            Console.WriteLine($"current time: {currentTime}");
+            Console.WriteLine($"how long ago the file was created: {currentTime.Subtract(creation).Days}");
+            return true;
+        }
+
         private static bool checkIfJobIsNeeded(string directory)
         {
             string[] subDirectories = Directory.GetDirectories(directory);
             return (subDirectories.Length < 1) ? true : false;
+            //if (subDirectories.Length < 1)
+            //{
+            //    Console.WriteLine(subDirectories[0]);
+            //    return true;
+            //}
+            //else
+            //{
+            //    Console.WriteLine("no subdirectories");
+            //    return false;
+            //}
         }
 
         private void startJobs(List<Job> jobList)
