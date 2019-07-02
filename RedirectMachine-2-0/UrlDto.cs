@@ -18,6 +18,7 @@ namespace RedirectMachine_2_0
         public string[] UrlResourceDirChunks { get; set; }
         public string[] UrlAllChunks { get; set; }
         public List<string> matchedUrls = new List<string>();
+        public bool Is301 { get; set; } = false;
 
         public UrlDto(string url)
         {

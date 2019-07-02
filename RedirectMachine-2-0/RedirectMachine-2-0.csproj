@@ -46,8 +46,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CatchAllUrl.cs" />
-    <Compile Include="CatchAllUtils.cs" />
+    <Compile Include="Existing301.cs" />
+    <Compile Include="Existing301Utils.cs" />
     <Compile Include="RedirectJob.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

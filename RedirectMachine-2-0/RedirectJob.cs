@@ -49,6 +49,7 @@ namespace RedirectMachine_2_0
         private void exportListsToFiles()
         {
             jobIOProcessor.ExportNewCSVs(urlDtos);
+            jobIOProcessor.ExportToCSV(existing301Utils.ExportCatchAllsToCSV(), jobIOProcessor.Output301CatchAllFile);
         }
 
         private void importListsFromFiles()

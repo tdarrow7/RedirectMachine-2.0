@@ -35,12 +35,13 @@ namespace RedirectMachine_2_0
 
             foreach (var urlDto in urlDtos)
             {
-                if (!findMatching301(urlDto, newUrlSiteMap))
+                //Console.WriteLine(urlDto.OriginalUrl);
+                if (!existing301Utils.checkExisting301Redirects(urlDto) || !findMatching301(urlDto, newUrlSiteMap))
                 {
                     urlDto.Flag = "no match";
                     if (!urlDto.OriginalUrl.Contains("."))
                     {
-                        existing301Utils.checkIfCatchAllIsCreated(urlDto.OriginalUrl);
+                        existing301Utils.checkIf301IsCreated(urlDto.OriginalUrl);
                         existing301Utils.CatchAllCount++;
                     }
 
@@ -51,7 +52,6 @@ namespace RedirectMachine_2_0
 
         internal bool findMatching301(UrlDto urlDto, List<Tuple<string, string>> newUrlSiteMap)
         {
-            Console.WriteLine("in new redirect");
             return (Basic301Finder(urlDto, newUrlSiteMap) || Advanced301Finder(urlDto, newUrlSiteMap) || ReverseAdvanced301Finder(urlDto, newUrlSiteMap) || Url301ChunkFinder(urlDto, newUrlSiteMap)) ? true : false;
         }
 

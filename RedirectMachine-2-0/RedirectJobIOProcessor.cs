@@ -15,7 +15,7 @@ namespace RedirectMachine_2_0
         public string OutputFolder { get; set; }
         public string OutputFoundUrlFile { get; set; }
         public string OutputLostUrlFile { get; set; }
-        public string OutputCatchAllFile { get; set; }
+        public string Output301CatchAllFile { get; set; }
         private string emailAddresses { get; set; }
         private List<string> logDump = new List<string>();
         internal List<Tuple<string, string>> temp301s = new List<Tuple<string, string>>();
@@ -31,7 +31,7 @@ namespace RedirectMachine_2_0
             OutputFolder = Path.Combine(Directory, @"Output");
             OutputFoundUrlFile = Path.Combine(OutputFolder, @"FoundRedirects.csv");
             OutputLostUrlFile = Path.Combine(OutputFolder, @"LostRedirects.csv");
-            OutputCatchAllFile = Path.Combine(OutputFolder, @"PossibleCatchalls.csv");
+            Output301CatchAllFile = Path.Combine(OutputFolder, @"PossibleCatchalls.csv");
 
             checkForLog();
         }
@@ -159,7 +159,7 @@ namespace RedirectMachine_2_0
             lostList.Add("Old Site Url, Potential Redirected Url");
             foreach (var urlDto in urlDtos)
             {
-                if (urlDto.Score == true)
+                if (urlDto.Score && !urlDto.Is301)
                 {
                     foundCount++;
                     foundList.Add($"{urlDto.OriginalUrl},{urlDto.NewUrl}, {urlDto.Flag}");
