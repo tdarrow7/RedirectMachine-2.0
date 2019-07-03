@@ -21,6 +21,12 @@ namespace RedirectMachine_2_0
         internal List<Tuple<string, string>> temp301s = new List<Tuple<string, string>>();
         internal List<Tuple<string, string>> tempUrlHeaderMaps = new List<Tuple<string, string>>();
 
+        public RedirectJobIOProcessor() { }
+
+        /// <summary>
+        /// working constructor
+        /// </summary>
+        /// <param name="directory"></param>
         public RedirectJobIOProcessor(string directory)
         {
             Directory = directory;
@@ -36,11 +42,21 @@ namespace RedirectMachine_2_0
             checkForLog();
         }
 
+
+        /// <summary>
+        /// return found email addresses
+        /// </summary>
+        /// <returns></returns>
         internal string getEmailAddresses()
         {
             return emailAddresses;
         }
 
+        /// <summary>
+        /// check to see if a lot exists. If it does, grab the first line out of the log file and check if it's an email address.
+        /// if it's not an email address or an email wasn't found, use timothy.darrow@scorpion.co
+        /// delete file and add email address to log dump
+        /// </summary>
         private void checkForLog()
         {
             string line = "";
@@ -55,19 +71,18 @@ namespace RedirectMachine_2_0
 
         }
 
+        /// <summary>
+        /// add line to logDump
+        /// </summary>
+        /// <param name="v"></param>
         internal void addToLogDump(string v)
         {
             logDump.Add(v);
         }
 
-        internal void writeToLog(string v)
-        {
-            using (StreamWriter fs = new StreamWriter(LoggerFile))
-            {
-                fs.WriteLine(v);
-            }
-        }
-
+        /// <summary>
+        /// create output directory
+        /// </summary>
         internal void CreateOutputDirectory()
         {
             System.IO.Directory.CreateDirectory(@"" + OutputFolder);
@@ -148,6 +163,10 @@ namespace RedirectMachine_2_0
             return urlList;
         }
 
+        /// <summary>
+        /// export all urlDtos to CSVs. Determine if the urlDto is a found or lost url based on its score
+        /// </summary>
+        /// <param name="urlDtos"></param>
         internal void ExportNewCSVs(List<UrlDto> urlDtos)
         {
             List<string> foundList = new List<string>();
@@ -188,6 +207,12 @@ namespace RedirectMachine_2_0
             ExportToCSV(lostList, OutputLostUrlFile);
             addToLogDump($"number of found urls: {foundCount}");
             addToLogDump($"number of lost urls: {lostCount}");
+        }
+
+        internal void export301CatchAllCSV(Existing301Utils existing301Utils)
+        {
+            ExportToCSV(existing301Utils.ExportCatchAllsToList(), Output301CatchAllFile);
+            addToLogDump($"total number of catchalls found: {existing301Utils.CatchAllCount}");
         }
 
         /// <summary>

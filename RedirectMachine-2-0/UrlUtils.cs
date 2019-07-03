@@ -85,10 +85,14 @@ namespace RedirectMachine_2_0
         public string TruncateString(string value, int maxLength)
         {
             string temp = CheckVars(value);
-            int pos = temp.LastIndexOf("/") + 1;
-            temp = temp.Substring(pos, temp.Length - pos);
-            if (!temp.StartsWith("/"))
-                temp = "/" + temp;
+            if (temp.EndsWith("/") && temp.Length > 1)
+            {
+                temp = temp.Substring(0, temp.Length - 1);
+                int pos = temp.LastIndexOf("/") + 1;
+                temp = temp.Substring(pos, temp.Length - pos);
+                if (!temp.StartsWith("/"))
+                    temp = "/" + temp;
+            }
             return temp.Length <= maxLength ? temp : temp.Substring(0, maxLength);
         }
 

@@ -20,6 +20,10 @@ namespace RedirectMachine_2_0
         public List<string> matchedUrls = new List<string>();
         public bool Is301 { get; set; } = false;
 
+        /// <summary>
+        /// working constructor
+        /// </summary>
+        /// <param name="url"></param>
         public UrlDto(string url)
         {
             OriginalUrl = url;

@@ -8,8 +8,7 @@ namespace RedirectMachine_2_0
     internal class Existing301Utils
     {
         internal List<Tuple<string, string>> existing301Params;
-
-        Dictionary<string, Existing301> catchAllList;
+        Dictionary<string, int> catchAllList;
         internal int CatchAllCount = 0;
 
         /// <summary>
@@ -17,25 +16,8 @@ namespace RedirectMachine_2_0
         /// </summary>
         public Existing301Utils()
         {
-            catchAllList = new Dictionary<string, Existing301>();
+            catchAllList = new Dictionary<string, int>();
             existing301Params = new List<Tuple<string, string>>();
-        }
-
-
-        /// <summary>
-        /// Create working list of all pararameters that need to be checked.
-        /// </summary>
-        /// <param name="urlFile"></param>
-        public void GenerateCatchAllParams(string urlFile)
-        {
-            using (var reader = new StreamReader(@"" + urlFile))
-            {
-                while (!reader.EndOfStream)
-                {
-                    string[] tempArray = reader.ReadLine().ToLower().Split(',');
-                    existing301Params.Add(new Tuple<string, string>(tempArray[0], tempArray[1]));
-                }
-            }
         }
 
         /// <summary>
@@ -46,24 +28,25 @@ namespace RedirectMachine_2_0
         internal bool checkExisting301Redirects(UrlDto urlDto)
         {
             string url = urlDto.OriginalUrl;
+            if (url.Contains("?"))
+            {
+                CatchAllCount++;
+                string urlSub = url.Split('?')[0] + "?";
+                //existing301Params.Add(new Tuple<string, string>(urlSub, "(needs to be determined)"));
+                checkIf301IsCreated(urlSub);
+                urlDto.Is301 = false;
+                return true;
+            }
             foreach (var tuple in existing301Params)
             {
                 if (url.StartsWith(tuple.Item1))
                 {
                     CatchAllCount++;
                     urlDto.Is301 = true;
+                    checkIf301IsCreated(url);
                     return true;
                 }
 
-            }
-            if (url.Contains("?"))
-            {
-                CatchAllCount++;
-                string urlSub = url.Split('?')[0] + "?";
-                existing301Params.Add(new Tuple<string, string>(urlSub, "(needs to be determined)"));
-                checkIf301IsCreated(urlSub);
-                urlDto.Is301 = false;
-                return true;
             }
             return false;
         }
@@ -75,44 +58,32 @@ namespace RedirectMachine_2_0
         internal void checkIf301IsCreated(string url)
         {
             if (!catchAllList.ContainsKey(url))
-                catchAllList.Add(url, new Existing301(url));
+                catchAllList.Add(url, 1);
             else
-                catchAllList[url].IncreaseCount();
+            {
+                int count = catchAllList[url] + 1;
+                catchAllList[url] = count;
+
+            }
         }
-
-
-        ///// <summary>
-        ///// Sort catchAllList and then export catchAllList to CSV to specified filepath
-        ///// </summary>
-        ///// <param name="filePath"></param>
-        //public void ExportCatchAllsToCSV(string filePath)
-        //{
-        //    using (TextWriter tw = new StreamWriter(@"" + filePath))
-        //    {
-        //        tw.WriteLine("Potential Probability,Number of times seen");
-        //        foreach (var keyValuePair in catchAllList)
-        //        {
-        //            tw.WriteLine($"{keyValuePair.Key},{keyValuePair.Value.Count}");
-        //        }
-        //        foreach (var tuple in existing301Params)
-        //        {
-        //            tw.WriteLine($"{tuple.Item1}*,{tuple.Item2}");
-        //        }
-        //    }
-        //    Console.WriteLine($"Number of urls turned to catchalls: {CatchAllCount}");
-        //}
 
         /// <summary>
         /// Sort catchAllList and then export catchAllList to CSV to specified filepath
         /// </summary>
         /// <param name="filePath"></param>
-        public List<string> ExportCatchAllsToCSV()
+        public List<string> ExportCatchAllsToList()
         {
             List<string> listOf301s = new List<string>();
-            listOf301s.Add("Potential 301 catchall,Number of times seen");
+            listOf301s.Add("Potential 301 catchall redirect,Number of times seen,Notes");
             foreach (var keyValuePair in catchAllList)
             {
-                listOf301s.Add($"{keyValuePair.Key},{keyValuePair.Value.Count}");
+                if (keyValuePair.Value > 1)
+                {
+                    if (keyValuePair.Key.Contains("?"))
+                        listOf301s.Add($"{keyValuePair.Key},{keyValuePair.Value},Query Parameter");
+                    else
+                        listOf301s.Add($"{keyValuePair.Key},{keyValuePair.Value}");
+                }
             }
             return listOf301s;
         }

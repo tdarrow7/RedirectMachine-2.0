@@ -12,24 +12,32 @@ namespace RedirectMachine_2_0
     {
         public string EmailAddresses { get; set; }
         internal RedirectJobIOProcessor jobIOProcessor;
-        internal RedirectFinder redirectFinder;
+        internal RedirectMatcher redirectFinder;
         internal UrlUtils utils;
         internal Existing301Utils existing301Utils;
         internal List<Tuple<string, string>> newUrlSiteMap;
         internal List<Tuple<string, string>> urlHeaderMaps;
         internal List<UrlDto> urlDtos;
 
+        /// <summary>
+        /// working constructor
+        /// </summary>
+        /// <param name="directory"></param>
         public RedirectJob(string directory)
         {
             utils = new UrlUtils();
             existing301Utils = new Existing301Utils();
             newUrlSiteMap = new List<Tuple<string, string>>();
             jobIOProcessor = new RedirectJobIOProcessor(directory);
-            redirectFinder = new RedirectFinder();
+            redirectFinder = new RedirectMatcher();
             urlHeaderMaps = new List<Tuple<string, string>>();
             urlDtos = new List<UrlDto>();
         }
 
+
+        /// <summary>
+        /// start redirect job methods
+        /// </summary>
         public void Start()
         {
             Stopwatch stopwatch = new Stopwatch();
@@ -41,15 +49,20 @@ namespace RedirectMachine_2_0
             importListsFromFiles();
             startRedirectFinder(); 
             exportListsToFiles();
-            jobIOProcessor.writeToLogDump();
             Console.WriteLine($"Sending email to {EmailAddresses}");
+            stopwatch.Stop();
+            TimeSpan ts = stopwatch.Elapsed;
+            string elapsedTime = "Elapsed time: " + String.Format("{0:00}:{1:00}:{2:00}.{3:00}", ts.Hours, ts.Minutes, ts.Seconds, ts.Milliseconds / 10);
+            jobIOProcessor.addToLogDump(elapsedTime);
+            jobIOProcessor.writeToLogDump();
+
             Gremlin.SendEmail(EmailAddresses, $"Your redirect job for {Path.GetFileName(jobIOProcessor.Directory)} is done.", $"Your redirect job for {jobIOProcessor.Directory} is done. Please retrieve it within 24 hours");
         }
 
         private void exportListsToFiles()
         {
             jobIOProcessor.ExportNewCSVs(urlDtos);
-            jobIOProcessor.ExportToCSV(existing301Utils.ExportCatchAllsToCSV(), jobIOProcessor.Output301CatchAllFile);
+            jobIOProcessor.export301CatchAllCSV(existing301Utils);
         }
 
         private void importListsFromFiles()
