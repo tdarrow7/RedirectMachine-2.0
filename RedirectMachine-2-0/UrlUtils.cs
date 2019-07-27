@@ -172,6 +172,8 @@ namespace RedirectMachine_2_0
             value = Regex.Replace(value, "---", "-");
             value = Regex.Replace(value, "dont", "don-t");
             value = Regex.Replace(value, "cant", "can-t");
+            if (value.EndsWith(".aspx"))
+                value = value.Substring(0, value.Length - 5);
             return value;
         }
 

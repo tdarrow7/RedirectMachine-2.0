@@ -34,7 +34,7 @@ namespace RedirectMachine_2_0
 
             foreach (var urlDto in urlDtos)
             {
-                if (!urlDto.OriginalUrl.Contains(".") && !existing301Utils.checkExisting301Redirects(urlDto) && !findMatching301(urlDto, newUrlSiteMap))
+                if (!urlDto.OriginalUrl.Contains(".pdf") && !existing301Utils.checkExisting301Redirects(urlDto) && !findMatching301(urlDto, newUrlSiteMap))
                 {
                     urlDto.Flag = "no match";
                     existing301Utils.checkIf301IsCreated(urlDto.OriginalUrl);
