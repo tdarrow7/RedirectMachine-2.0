@@ -8,7 +8,7 @@ namespace RedirectMachine_2_0
     internal class RedirectJobFinder
     {
         private string root;
-        private List<RedirectJob> jobList = new List<RedirectJob>();
+        private List<RedirectJob> jobList = new List<RedirectJob>(); 
 
         public RedirectJobFinder(string root)
         {

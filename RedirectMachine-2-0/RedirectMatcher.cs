@@ -9,7 +9,7 @@ namespace RedirectMachine_2_0
 {
     internal class RedirectMatcher
     {
-        UrlUtils urlUtils;
+        UrlUtils urlUtils; 
 
         /// <summary>
         /// default working constructor

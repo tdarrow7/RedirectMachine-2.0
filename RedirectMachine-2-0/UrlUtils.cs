@@ -167,7 +167,7 @@ namespace RedirectMachine_2_0
         /// <param name="value"></param>
         /// <returns></returns>
         public string CheckVars(string value)
-        {
+        { 
             value = Regex.Replace(value, "--", "-");
             value = Regex.Replace(value, "---", "-");
             value = Regex.Replace(value, "dont", "don-t");
@@ -175,7 +175,7 @@ namespace RedirectMachine_2_0
             if (value.EndsWith(".aspx"))
                 value = value.Substring(0, value.Length - 5);
             return value;
-        }
+        } 
 
         /// <summary>
         /// return first position of j variable in string i.

@@ -137,14 +137,14 @@ namespace RedirectMachine_2_0
             List<Tuple<string, string>> newUrlSiteMap = new List<Tuple<string, string>>();
             using (var reader = new StreamReader(InputNewUrlFile))
             {
-                while (!reader.EndOfStream)
+                while (!reader.EndOfStream) 
                 {
                     string[] tempArray = reader.ReadLine().ToLower().Split(',');
                     newUrlSiteMap.Add(new Tuple<string, string>(tempArray[0], "/" + tempArray[1] + "/"));
                 }
             }
             Console.WriteLine("Done importing new urls into list");
-            return newUrlSiteMap;
+            return newUrlSiteMap; 
         }
 
         /// <summary>

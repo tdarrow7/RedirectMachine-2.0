@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 
 namespace RedirectMachine_2_0
-{
+{ 
     internal class RedirectJob
     {
         public string EmailAddresses { get; set; }

@@ -9,7 +9,7 @@ namespace RedirectMachine_2_0
 {
     class Program
     {
-        /// <summary>
+        /// <summary> 
         /// Let the games begin
         /// </summary>
         /// <param name="args"></param>

@@ -13,7 +13,7 @@ namespace RedirectMachine_2_0
         public string UrlParentDir { get; set; }
         public string UrlResourceDir { get; set; }
         public bool Score { get; set; }
-        public bool StartsWithSlash { get; set; }
+        public bool StartsWithSlash { get; set; } 
         public bool EndsWithSlash { get; set; }
         public string[] UrlResourceDirChunks { get; set; }
         public string[] UrlAllChunks { get; set; }
