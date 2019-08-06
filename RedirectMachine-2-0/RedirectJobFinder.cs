@@ -18,7 +18,9 @@ namespace RedirectMachine_2_0
         internal void Run()
         {
             jobList = setUpJobs();
-            Console.WriteLine($"number of jobs: {jobList.Count}");
+            if (jobList.Count > 0)
+                Gremlin.Info($"Number of new jobs: {jobList.Count}");
+            //Console.WriteLine($"number of jobs: {jobList.Count}");
             startJobs(jobList);
         }
 

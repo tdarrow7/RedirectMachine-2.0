@@ -28,6 +28,5 @@ namespace RedirectMachine_2_0
         {
             OriginalUrl = url;
         }
-
     }
 }

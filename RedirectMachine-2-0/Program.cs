@@ -28,7 +28,7 @@ namespace RedirectMachine_2_0
             jobs.Run();
 
 
-            Console.WriteLine("closing gremlin");
+            //Console.WriteLine("closing gremlin");
             Gremlin.Close();
         }
     }

@@ -12,8 +12,8 @@ namespace RedirectMachine_2_0
     {
         public string EmailAddresses { get; set; }
         internal RedirectJobIOProcessor jobIOProcessor;
-        internal RedirectMatcher redirectFinder;
-        internal UrlUtils utils;
+        internal RedirectMatcher redirectMatcher;
+        internal UrlUtils urlUtils;
         internal Existing301Utils existing301Utils;
         internal List<Tuple<string, string>> newUrlSiteMap;
         internal List<Tuple<string, string>> urlHeaderMaps;
@@ -25,11 +25,11 @@ namespace RedirectMachine_2_0
         /// <param name="directory"></param>
         public RedirectJob(string directory)
         {
-            utils = new UrlUtils();
+            urlUtils = new UrlUtils();
             existing301Utils = new Existing301Utils();
             newUrlSiteMap = new List<Tuple<string, string>>();
             jobIOProcessor = new RedirectJobIOProcessor(directory);
-            redirectFinder = new RedirectMatcher();
+            redirectMatcher = new RedirectMatcher();
             urlHeaderMaps = new List<Tuple<string, string>>();
             urlDtos = new List<UrlDto>();
         }
@@ -109,7 +109,7 @@ namespace RedirectMachine_2_0
 
         private void startRedirectFinder()
         {
-            redirectFinder.Run(urlDtos, newUrlSiteMap, existing301Utils);
+            redirectMatcher.Run(urlDtos, newUrlSiteMap, existing301Utils);
         }
 
         /// <summary>
@@ -139,11 +139,11 @@ namespace RedirectMachine_2_0
         private UrlDto createUrlDto(string url)
         {
             UrlDto urlDto = new UrlDto(url);
-            urlDto.UrlParentDir = utils.TruncateStringHead(url);
-            urlDto.UrlResourceDir = utils.TruncateString(url, 48);
-            urlDto.UrlResourceDirChunks = utils.ReturnUrlChunks(urlDto.UrlResourceDir);
-            urlDto.UrlAllChunks = utils.ReturnUrlChunks(url);
-            urlDto.RemappedParentDir = utils.ReturnRemappedUrlParentDir(url, urlHeaderMaps);
+            urlDto.UrlParentDir = urlUtils.TruncateStringHead(url);
+            urlDto.UrlResourceDir = urlUtils.TruncateString(url, 48);
+            urlDto.UrlResourceDirChunks = urlUtils.ReturnUrlChunks(urlDto.UrlResourceDir);
+            urlDto.UrlAllChunks = urlUtils.ReturnUrlChunks(url);
+            urlDto.RemappedParentDir = urlUtils.ReturnRemappedUrlParentDir(url, urlHeaderMaps);
             return urlDto;
         }
     }
