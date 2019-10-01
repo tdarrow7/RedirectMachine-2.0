@@ -104,12 +104,7 @@ namespace RedirectMachine_2_0
         public List<string> ExportCatchAllsToList()
         {
             List<string> exportListOf301s = new List<string>();
-
-
-            //List<KeyValuePair<string, string>> tempKeyValues = new List<KeyValuePair<string, string>>();
-
             exportListOf301s.Add("Potential 301 catchall redirect,Number of times seen,Notes");
-            //foreach (var keyValuePair in potentialCatchalls)
             foreach (KeyValuePair<string, int> catchall in potentialCatchalls.OrderBy(key => key.Value))
             {
 
@@ -120,19 +115,8 @@ namespace RedirectMachine_2_0
                     else
                         exportListOf301s.Add($"{catchall.Key},{catchall.Value}");
                 }
-                    //tempKeyValues.Add(new KeyValuePair<string, string>(keyValuePair.Key, keyValuePair.Value.ToString()));
             }
-
-            //tempKeyValues.Sort((x, y) => x.Value.CompareTo(y.Value));
-
-            //foreach (var keyValuePair in tempKeyValues)
-            //{
-            //    if (keyValuePair.Key.Contains("?"))
-            //        exportListOf301s.Add($"{keyValuePair.Key},{keyValuePair.Value},Query Parameter");
-            //    else
-            //        exportListOf301s.Add($"{keyValuePair.Key},{keyValuePair.Value}");
-            //}
-            exportListOf301s.Reverse(1, exportListOf301s.Count);
+            exportListOf301s.Reverse(1, exportListOf301s.Count - 1);
             return exportListOf301s;
         }
 
