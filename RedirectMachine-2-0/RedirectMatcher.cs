@@ -34,15 +34,31 @@ namespace RedirectMachine_2_0
 
             foreach (var urlDto in urlDtos)
             {
+                if (urlDto.OriginalUrl == "https://www.ricehospital.com/blog/nursery/abdullah-mohamed/")
+                    Console.WriteLine("found it");
                 if (!urlDto.OriginalUrl.Contains(".pdf") && !existing301Utils.checkExisting301Redirects(urlDto) && !findMatching301(urlDto, newUrlSiteMap))
                 {
                     urlDto.Flag = "no match";
-                    existing301Utils.checkIf301IsCreated(urlDto.OriginalUrl);
-                    existing301Utils.CatchAllCount++;
+                    prepLostMatch(existing301Utils, urlDto.OriginalUrl);
 
                 }
             }
             Console.WriteLine("end search");
+        }
+
+        internal void prepLostMatch(Existing301Utils existing301Utils, string url)
+        {
+            List<string> segments = new List<string>();
+            Uri uri = new Uri((url.StartsWith("http")) ? url : "https://www.thisgoesnowhere.com" + url);
+            segments = uri.Segments.ToList();
+            if (uri.Host != "www.thisgoesnowhere.com")
+                segments[0] = uri.GetLeftPart(UriPartial.Scheme) + uri.Host + "/";
+
+            existing301Utils.iterateThroughAllCatchAllsInUrl(segments.ToArray(), segments.Count);
+
+            //existing301Utils.updatePotentialCatchAllList(url);
+            //existing301Utils.CatchAllCount++;
+            //throw new NotImplementedException();
         }
 
         /// <summary>

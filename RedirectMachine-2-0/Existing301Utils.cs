@@ -7,8 +7,10 @@ namespace RedirectMachine_2_0
 {
     internal class Existing301Utils
     {
-        internal List<Tuple<string, string>> existing301Params;
-        Dictionary<string, int> catchAllList;
+        internal List<Tuple<string, string>> listOf301s;
+        Dictionary<string, int> potentialCatchalls;
+        List<string> existingCatchalls;
+
         internal int CatchAllCount = 0;
 
         /// <summary>
@@ -16,8 +18,9 @@ namespace RedirectMachine_2_0
         /// </summary>
         public Existing301Utils()
         {
-            catchAllList = new Dictionary<string, int>();
-            existing301Params = new List<Tuple<string, string>>();
+            listOf301s = new List<Tuple<string, string>>();
+            potentialCatchalls = new Dictionary<string, int>();
+            existingCatchalls= new List<string>();
         }
 
         /// <summary>
@@ -28,42 +31,69 @@ namespace RedirectMachine_2_0
         internal bool checkExisting301Redirects(UrlDto urlDto)
         {
             string url = urlDto.OriginalUrl;
+            // check to see if the url will be covered by one of the catchalls. If it is, ignore this url, up the CatchAllCount, and return true
+            foreach(var catchAll in existingCatchalls)
+            {
+                if (url.StartsWith(catchAll))
+                    return found301(urlDto);
+            }
+            // the Scorpion standard is to not redirect any specific urls that are using query strings. 
+            // Because of this, ignore this url, up the CatchAllCount, and return true
             if (url.Contains("?"))
             {
-                CatchAllCount++;
-                string urlSub = url.Split('?')[0] + "?";
-                //existing301Params.Add(new Tuple<string, string>(urlSub, "(needs to be determined)"));
-                checkIf301IsCreated(urlSub);
-                urlDto.Is301 = false;
-                return true;
+                updatePotentialCatchAllList(url.Split('?')[0] + "?");
+                return found301(urlDto);
             }
-            foreach (var tuple in existing301Params)
+            // final check: make sure this url isn't already covered by the list of 301s imported from the Existing301s.
+            // (this check verifies that there are no duplicates)
+            // If it is, ignore this url, up the CatchAllCount, and return true.
+            foreach (var tuple in listOf301s)
             {
                 if (url.StartsWith(tuple.Item1))
                 {
-                    CatchAllCount++;
-                    urlDto.Is301 = true;
-                    checkIf301IsCreated(url);
-                    return true;
+                    updatePotentialCatchAllList(url);
+                    return found301(urlDto);
                 }
 
             }
+            // if all above checks fail, this is not a 301 redirect
             return false;
+        }
+
+        /// <summary>
+        /// mini function which handles repetitive code used by several conditional checks
+        /// </summary>
+        /// <returns></returns>
+        private bool found301(UrlDto urlDto)
+        {
+            CatchAllCount++;
+            urlDto.Is301 = true;
+            return true;
         }
 
         /// <summary>
         /// check to see if we already have the catchall
         /// </summary>
         /// <param name="url"></param>
-        internal void checkIf301IsCreated(string url)
+        internal void updatePotentialCatchAllList(string url)
         {
-            if (!catchAllList.ContainsKey(url))
-                catchAllList.Add(url, 1);
+            if (!potentialCatchalls.ContainsKey(url))
+                potentialCatchalls.Add(url, 1);
             else
             {
-                int count = catchAllList[url] + 1;
-                catchAllList[url] = count;
+                int count = potentialCatchalls[url] + 1;
+                potentialCatchalls[url] = count;
+            }
+        }
 
+        internal void iterateThroughAllCatchAllsInUrl(string[] segments, int i)
+        {
+            if (i > 1)
+            {
+                string urlSub = String.Join("", segments, 0, i);
+                updatePotentialCatchAllList(urlSub);
+                i--;
+                iterateThroughAllCatchAllsInUrl(segments, i);
             }
         }
          
@@ -73,28 +103,51 @@ namespace RedirectMachine_2_0
         /// <param name="filePath"></param>
         public List<string> ExportCatchAllsToList()
         {
-            List<string> listOf301s = new List<string>();
-            listOf301s.Add("Potential 301 catchall redirect,Number of times seen,Notes");
-            foreach (var keyValuePair in catchAllList)
+            List<string> exportListOf301s = new List<string>();
+
+
+            //List<KeyValuePair<string, string>> tempKeyValues = new List<KeyValuePair<string, string>>();
+
+            exportListOf301s.Add("Potential 301 catchall redirect,Number of times seen,Notes");
+            //foreach (var keyValuePair in potentialCatchalls)
+            foreach (KeyValuePair<string, int> catchall in potentialCatchalls.OrderBy(key => key.Value))
             {
-                if (keyValuePair.Value > 1)
+
+                if (catchall.Value > 3)
                 {
-                    if (keyValuePair.Key.Contains("?"))
-                        listOf301s.Add($"{keyValuePair.Key},{keyValuePair.Value},Query Parameter");
+                    if (catchall.Key.Contains("?"))
+                        exportListOf301s.Add($"{catchall.Key},{catchall.Value},Query Parameter");
                     else
-                        listOf301s.Add($"{keyValuePair.Key},{keyValuePair.Value}");
+                        exportListOf301s.Add($"{catchall.Key},{catchall.Value}");
                 }
+                    //tempKeyValues.Add(new KeyValuePair<string, string>(keyValuePair.Key, keyValuePair.Value.ToString()));
             }
-            return listOf301s;
+
+            //tempKeyValues.Sort((x, y) => x.Value.CompareTo(y.Value));
+
+            //foreach (var keyValuePair in tempKeyValues)
+            //{
+            //    if (keyValuePair.Key.Contains("?"))
+            //        exportListOf301s.Add($"{keyValuePair.Key},{keyValuePair.Value},Query Parameter");
+            //    else
+            //        exportListOf301s.Add($"{keyValuePair.Key},{keyValuePair.Value}");
+            //}
+            exportListOf301s.Reverse(1, exportListOf301s.Count);
+            return exportListOf301s;
         }
 
         /// <summary>
-        /// add tuple 
+        /// add catchall
+        /// if url ends with '*', it is a catchall and add it to the existingCatchalls list.
+        /// otherwise, add tuple to listOf301s
         /// </summary>
         /// <param name="tuple"></param>
         internal void AddNewCatchAllParam(Tuple<string, string> tuple)
         {
-            existing301Params.Add(tuple);
+            if (tuple.Item1.EndsWith("*"))
+                existingCatchalls.Add(tuple.Item1.Substring(0, tuple.Item1.Length - 1));
+            else
+                listOf301s.Add(tuple);
         }
     }
 }
