@@ -34,8 +34,6 @@ namespace RedirectMachine_2_0
 
             foreach (var urlDto in urlDtos)
             {
-                if (urlDto.OriginalUrl == "https://www.ricehospital.com/blog/nursery/abdullah-mohamed/")
-                    Console.WriteLine("found it");
                 if (!urlDto.OriginalUrl.Contains(".pdf") && !existing301Utils.checkExisting301Redirects(urlDto) && !findMatching301(urlDto, newUrlSiteMap))
                 {
                     urlDto.Flag = "no match";
