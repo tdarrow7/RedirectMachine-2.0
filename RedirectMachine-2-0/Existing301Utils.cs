@@ -86,6 +86,11 @@ namespace RedirectMachine_2_0
             }
         }
 
+        /// <summary>
+        /// recursive method to check how many times each part of a url has been seen as a catchall
+        /// </summary>
+        /// <param name="segments"></param>
+        /// <param name="i"></param>
         internal void iterateThroughAllCatchAllsInUrl(string[] segments, int i)
         {
             if (i > 1)
