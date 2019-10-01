@@ -11,15 +11,16 @@ namespace RedirectMachine_2_0
         public string InputOldUrlFile { get; set; }
         public string InputNewUrlFile { get; set; }
         public string InputExisting301File { get; set; }
-        public string LoggerFile { get; set; }
+        public string InputSubProjectFile { get; set; }
+        public string LogFile { get; set; }
         public string OutputFolder { get; set; }
         public string OutputFoundUrlFile { get; set; }
         public string OutputLostUrlFile { get; set; }
         public string Output301CatchAllFile { get; set; }
         private string emailAddresses { get; set; }
         private List<string> logDump = new List<string>();
-        internal List<Tuple<string, string>> temp301s = new List<Tuple<string, string>>();
-        internal List<Tuple<string, string>> tempUrlHeaderMaps = new List<Tuple<string, string>>();
+        //internal List<Tuple<string, string>> temp301s = new List<Tuple<string, string>>();
+        //internal List<Tuple<string, string>> tempUrlHeaderMaps = new List<Tuple<string, string>>();
 
         public RedirectJobIOProcessor() { }
 
@@ -30,14 +31,16 @@ namespace RedirectMachine_2_0
         public RedirectJobIOProcessor(string directory)
         {
             Directory = directory;
-            InputOldUrlFile = System.IO.Directory.GetFiles(Directory, "*OldSiteUrls.csv")[0];
-            InputNewUrlFile = System.IO.Directory.GetFiles(Directory, "*NewSiteUrls.csv")[0];
-            InputExisting301File = System.IO.Directory.GetFiles(Directory, "*Existing301s.csv")[0];
-            LoggerFile = Directory + @"\Log.txt";
+            InputOldUrlFile = System.IO.Directory.GetFiles(Directory, "OldSiteUrls.csv")[0];
+            InputNewUrlFile = System.IO.Directory.GetFiles(Directory, "NewSiteUrls.csv")[0];
+            InputExisting301File = System.IO.Directory.GetFiles(Directory, "Existing301s.csv")[0];
+            if (File.Exists(Path.Combine(Directory, @"SubProjects.csv")))
+                InputSubProjectFile = System.IO.Directory.GetFiles(Directory, "SubProjects.csv")[0];
+            LogFile = Directory + @"\Log.txt";
             OutputFolder = Path.Combine(Directory, @"Output");
             OutputFoundUrlFile = Path.Combine(OutputFolder, @"FoundRedirects.csv");
             OutputLostUrlFile = Path.Combine(OutputFolder, @"LostRedirects.csv");
-            Output301CatchAllFile = Path.Combine(OutputFolder, @"PossibleCatchalls.csv");
+            Output301CatchAllFile = Path.Combine(OutputFolder, @"Possible301Catchalls.csv");
 
             checkForLog();
         }
@@ -60,10 +63,10 @@ namespace RedirectMachine_2_0
         private void checkForLog()
         {
             string line = "";
-            if (File.Exists(LoggerFile) && new FileInfo(LoggerFile).Length > 0)
+            if (File.Exists(LogFile) && new FileInfo(LogFile).Length > 0)
             {
-                line = File.ReadLines(LoggerFile).First();
-                File.Delete(LoggerFile);
+                line = File.ReadLines(LogFile).First();
+                File.Delete(LogFile);
             }
 
             emailAddresses = (line.Contains('@')) ? line : "timothy.darrow@scorpion.co";
@@ -93,7 +96,7 @@ namespace RedirectMachine_2_0
         /// </summary>
         internal void writeToLogDump()
         {
-            using (StreamWriter fs = new StreamWriter(LoggerFile))
+            using (StreamWriter fs = new StreamWriter(LogFile))
             {
                 foreach (var line in logDump)
                 {
@@ -102,29 +105,39 @@ namespace RedirectMachine_2_0
             }
         }
 
+        internal List<Tuple<string, string>> ImportTuplesFromFile(string filePath)
+        {
+            List<Tuple<string, string>> tuples = new List<Tuple<string, string>>();
+            using (var reader = new StreamReader(@"" + filePath))
+            {
+                while (!reader.EndOfStream)
+                {
+                    string[] tuple = reader.ReadLine().ToLower().Split(',');
+                    if (tuple.Length >= 2)
+                        tuples.Add(new Tuple<string, string>(tuple[0], tuple[1]));
+                }
+            }
+            return tuples;
+        }
+
         /// <summary>
         /// using the Existing301Redirects file, determine what lines are catchalls and what are redirected site maps
         /// if the line ends with a true bool or is null, add the line as a catchall redirect
         /// if the line ends with false, add the line as a headerMap tuple
         /// </summary>
         /// <param name="urlFile"></param>
-        private void ImportExisting301s(string urlFile)
+        internal List<Tuple<string, string>> ImportExisting301sFromFile()
         {
-            using (var reader = new StreamReader(@"" + urlFile))
-            {
-                while (!reader.EndOfStream)
-                {
-                    string[] redirectLine = reader.ReadLine().ToLower().Split(',');
-                    if (redirectLine[2] == "true" || redirectLine[2] == null)
-                    {
-                        temp301s.Add(new Tuple<string, string>(redirectLine[0], redirectLine[1]));
-                        //catchAllUtilObject.AddNewCatchAllParam(new Tuple<string, string>(redirectLine[0], redirectLine[1]));
-                    }
-                    else
-                        tempUrlHeaderMaps.Add(new Tuple<string, string>(redirectLine[0], redirectLine[1]));
-                }
-            }
-            Console.WriteLine("Done Importing");
+            return ImportTuplesFromFile(InputExisting301File);
+        }
+
+        /// <summary>
+        /// Add subproject contents to list
+        /// </summary>
+        /// <param name="urlFile"></param>
+        internal List<Tuple<string, string>> ImportSubprojectsFromFile()
+        {
+            return (InputSubProjectFile != null) ? ImportTuplesFromFile(InputSubProjectFile) : new List<Tuple<string, string>>();
         }
 
         /// <summary>
@@ -132,25 +145,15 @@ namespace RedirectMachine_2_0
         /// Sort results of list alphabetically
         /// </summary>
         /// <param name="urlFile"></param>
-        internal List<Tuple<string, string>> ImportNewUrlsIntoList()
+        internal List<Tuple<string, string>> ImportNewUrlsFromFile()
         {
-            List<Tuple<string, string>> newUrlSiteMap = new List<Tuple<string, string>>();
-            using (var reader = new StreamReader(InputNewUrlFile))
-            {
-                while (!reader.EndOfStream) 
-                {
-                    string[] tempArray = reader.ReadLine().ToLower().Split(',');
-                    newUrlSiteMap.Add(new Tuple<string, string>(tempArray[0], "/" + tempArray[1] + "/"));
-                }
-            }
-            Console.WriteLine("Done importing new urls into list");
-            return newUrlSiteMap; 
+            return ImportTuplesFromFile(InputNewUrlFile);
         }
 
         /// <summary>
         /// For Every line in CSV, read line and check if line belongs in a catchAll. If not, create new RedirectUrl Object.
         /// </summary>
-        internal List<string> ImportOldUrlsIntoList()
+        internal List<string> ImportOldUrlsFromFile()
         {
             List<string> urlList = new List<string>();
             using (var reader = new StreamReader(InputOldUrlFile))
@@ -183,8 +186,7 @@ namespace RedirectMachine_2_0
                     foundCount++;
                     foundList.Add($"{urlDto.OriginalUrl},{urlDto.NewUrl}, {urlDto.Flag}");
                 }
-
-                else
+                else if (!urlDto.Is301)
                 {
                     lostCount++;
                     if (urlDto.matchedUrls.Count > 0)

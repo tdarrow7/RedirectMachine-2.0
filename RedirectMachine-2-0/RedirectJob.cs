@@ -16,7 +16,7 @@ namespace RedirectMachine_2_0
         internal UrlUtils urlUtils;
         internal Existing301Utils existing301Utils;
         internal List<Tuple<string, string>> newUrlSiteMap;
-        internal List<Tuple<string, string>> urlHeaderMaps;
+        internal List<Tuple<string, string>> subProjectMaps;
         internal List<UrlDto> urlDtos;
 
         /// <summary>
@@ -30,7 +30,7 @@ namespace RedirectMachine_2_0
             newUrlSiteMap = new List<Tuple<string, string>>();
             jobIOProcessor = new RedirectJobIOProcessor(directory);
             redirectMatcher = new RedirectMatcher();
-            urlHeaderMaps = new List<Tuple<string, string>>();
+            subProjectMaps = new List<Tuple<string, string>>();
             urlDtos = new List<UrlDto>();
         }
 
@@ -68,42 +68,26 @@ namespace RedirectMachine_2_0
         private void importListsFromFiles()
         {
             importExisting301s();
-            importUrlHeaderMaps();
-            importNewUrlsIntoList();
+            subProjectMaps = jobIOProcessor.ImportSubprojectsFromFile();
+            newUrlSiteMap = jobIOProcessor.ImportNewUrlsFromFile();
             createListOfDtos();
-        }
-
-        private void importNewUrlsIntoList()
-        {
-            List<Tuple<string, string>> list = jobIOProcessor.ImportNewUrlsIntoList();
-            foreach (var tuple in list)
-            {
-                newUrlSiteMap.Add(tuple);
-            }
-        }
-
-        private void createListOfDtos()
-        {
-            List<string> list = jobIOProcessor.ImportOldUrlsIntoList();
-            foreach (var line in list)
-            {
-                urlDtos.Add(createUrlDto(line));
-            }
         }
 
         private void importExisting301s()
         {
-            foreach (var tuple in jobIOProcessor.temp301s)
+            List<Tuple<string, string>> temp301s = jobIOProcessor.ImportExisting301sFromFile();
+            foreach (var tuple in temp301s)
             {
                 existing301Utils.AddNewCatchAllParam(tuple);
             }
         }
 
-        private void importUrlHeaderMaps()
+        private void createListOfDtos()
         {
-            foreach (var tuple in jobIOProcessor.temp301s)
+            List<string> list = jobIOProcessor.ImportOldUrlsFromFile();
+            foreach (var line in list)
             {
-                urlHeaderMaps.Add(tuple);
+                urlDtos.Add(createUrlDto(line));
             }
         }
 
@@ -123,8 +107,6 @@ namespace RedirectMachine_2_0
                 while (!reader.EndOfStream)
                 {
                     string url = reader.ReadLine().ToLower();
-                    //if (!catchAllUtilObject.CheckExistingCatchallParams(url) && !existingRedirects.Contains(url))
-                    //    urlDtos.Add(createUrlDto(url));
                 }
             }
             Console.WriteLine("Done importing old urls into list");
@@ -143,7 +125,7 @@ namespace RedirectMachine_2_0
             urlDto.UrlResourceDir = urlUtils.TruncateString(url, 48);
             urlDto.UrlResourceDirChunks = urlUtils.ReturnUrlChunks(urlDto.UrlResourceDir);
             urlDto.UrlAllChunks = urlUtils.ReturnUrlChunks(url);
-            urlDto.RemappedParentDir = urlUtils.ReturnRemappedUrlParentDir(url, urlHeaderMaps);
+            urlDto.RemappedParentDir = urlUtils.ReturnRemappedUrlParentDir(url, subProjectMaps);
             return urlDto;
         }
     }
