@@ -19,7 +19,7 @@ namespace RedirectMachine_2_0
             Gremlin.EmailTo = "timothy.darrow@scorpion.co";
 
 
-            string root = @"S:\M-R\Marcus LeGault\Redirect Machine";
+            string root = @"S:\Timothy Darrow\Redirect Machine";
             RedirectJobFinder jobs = new RedirectJobFinder(root);
 
             int jobCount = jobs.returnJobCount();
